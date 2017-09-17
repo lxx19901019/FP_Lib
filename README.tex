@@ -4,7 +4,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage[margin = .5in]{geometry}
-
+\usepackage{enumerate}
 
 % Packages for Formatting Contents
 \usepackage[utf8]{inputenc}
@@ -25,11 +25,15 @@
 
 This library implements basic functions necessary for 32-bit fixed-point operations. 
 This document explains the purposes  of all functions and their implementations. Supporting
-files including ``parameters.h'' and ``fixed_point.h'' are discussed as well. 
+files including ``parameters.h'' and ``fixedpoint.h'' are discussed as well. 
+
+Model for the framework was drawn from the following source:
+
+``code.google.com/archive/p/libfixmath/source/default/source''
 
 OVERALL FEATURES:
 
-\begin{enumerate}
+\begin{enumerate}[i.]
 
 \item 
 
@@ -41,9 +45,10 @@ OVERALL FEATURES:
 
 
 
-\section{Arithmetic}
 
-\subsection{fp32\_add(fp\_32, fp\_32)}
+\section{Basic Arithmetic}
+
+\subsection{fp32\_add}
 
 Addition is the same as for regular integers.
 
@@ -53,7 +58,32 @@ Subtraction is the
 
 \subsection{Multiplication}
 
+There are three primary issues which can arise in our multiplication:
+
+\begin{enumerate}[i.]
+
+\item{Overflow}
+
+\item{Underflow}
+
+\item{Loss of Precision}
+
+\end{enumerate}
+
+The solution implemented deals with all three of these problems at once, 
+and hinges upon the 
+
+\textbf{Proposition.} Multiplication with double the precision guarantees
+an exact answer
+
+\textbf{Proof.} 
+
+
+\subsection{Division}
+
 \section{Basic Conversions}
+
+\section{Saturating Arithmetic}
 
 \section{Min/Max}
 
@@ -61,7 +91,7 @@ Subtraction is the
 
 \section{Basic Trigonometric Functions}
 
-\subsection{$\sin$}
+
 
 
 

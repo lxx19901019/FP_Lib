@@ -1,5 +1,4 @@
 #include "fixed_point.h"
-
 #include <limits.h>
 #include <stdlib.h>
 #include <math.h>
@@ -18,7 +17,8 @@ code.google.com/archive/p/libfixmath/source/default/source
 
 --UNDERFLOW/OVERFLOW DETECTION
 
-RMEMEBER: Underflow refers to the LARGEST NEGATIVE VALUE occuring, NOT 
+REMEMEBER: Underflow refers to the LARGEST NEGATIVE VALUE occuring, NOT a loss
+in precision due to fractional components smaller than 2^{-FRAC_P}
 
 --HARDCODE CERTAIN CONSTANTS
 
@@ -51,32 +51,113 @@ can only be compiled with the GNU compiler.
 
 /********** BEGIN BASIC ARITHMETIC **********/
 
+/* Overflow detection is built-in to all these functions. */
+
 /* Returns a + b in fixed point. See "Addition" in README.pdf
    for further details.  */
 fp_32 fp32_add(fp_32 a, fp_32 b)
 {
-  return a + b;
-  
+  if (a < 0 && b < 0 && a + b > 0)
+    {
+      fprintf(stderr, "fp32_add Underflow");
+      exit(1);
+    }
+
+  else if (a > 0 && b > 0 && a + b < 0)
+    {
+      fprintf(stderr, "fp32_add Overflow");
+      exit(1);
+    }
+
+  else
+    {
+      return a + b;
+    }
 }
 
-/* Returns a - b (note that diverges form the IA32 standard). */
+/* For fp's "a" and "b", returns a - b
+
+   NOTE: order of input diverges from the IA32 standard. */
 fp_32 fp32_sub(fp_32 a, fp_32 b)
 {
-  return a - b
+  if (a < 0 && b > 0 && a + b > 0)
+    {
+      fprintf(stderr, "fp32_sub Underflow");
+      exit(1);
+    }
+
+  else if (a > 0 && b < 0 && a + b < 0)
+    {
+      fprintf(stderr, "fp32_sub Overflow");
+      exit(1);
+    }
+
+  else
+    {
+      return a - b;
+    }
 }
 
-/* Returns a * b in fixed point */
+/* For fp's "a" and "b", returns "a * b" in fixed point. */
 fp_32 fp32_mult(fp_32 a, fp_32 b)
 {
-  /* Integer multiplication offsets by an extra 2^FRAC_P factor */
 
-  return a * b / (1 << FRAC_P);
+  /* OK... so now this is in 64-bit.   */
+  int64_t temp = (int64_t a) * (int64_t b);
+
+  /* 2 * FRAC_P bits in the result will be fractional...the rest will be 
+     integral. So can check for overflow/underflow/loss of precision this way.  */
+
+  if (temp > (int64_t FP32_OVERFLOW))
+    {
+      fprintf(stderr, "fp32_mult Overflow/Underflow");
+      exit(1);
+    }
+
+  /* If any of the last FRAC_P fractional bits are set, 
+     we have lost precision and should be flagged accordingly.
+     
+     PROBABLY should not worry about this...just come back and comment out later.
+ */
+  else if ((temp & FRAC_MASK) != 0)
+    {
+      fprintf(stderr, "fp32_mult precision loss");
+      exit(1);
+    }
+  
+  /* Otherwise...return the truncated right shift. Using gnu compiler so this is
+     guaranteed to be arithmetic */
+  else
+    {
+      return (fp_32) (temp >> FRACP_P);
+    }
+ 
 }
 
-/* Returns */
-fp_32 fp32_div(fp_32, fp_32)
-{
+/* For fp's "a" and "b", returns a/b
 
+   NOTE: order of input diverges from the IA32 standard. */
+fp_32 fp32_div(fp_32 a, fp_32 b)
+{
+  /* OK... so now this is in 64-bit.   */
+  int64_t temp = (((int64_t) a) << FRAC_P) / (int64_t b);
+
+  /* Overflow and underflow can occur here...and a loss of precision
+     quite easily as well. Way to check with division, however, is 
+     the result in 64-bit vs the result in 32-bit. */
+  if (temp > (int64_t FP32_OVERFLOW))
+    {
+      fprintf(stderr, "fp32_mult Overflow");
+      exit(1);
+    }
+
+  /* Otherwise...return the truncated right shift. Using gnu compiler so this is
+     guaranteed to be arithmetic */
+  else
+    {
+      return (fp_32) (temp);
+    }
+  
 }
 
 
@@ -113,14 +194,12 @@ fp_32 int32_to_fp32(int32_t int32_input)
 
 }
 
-
 /* 
    Converts an fp_32 to a 32-bit integer via
    naive truncation. 
 
    No error is possible here really, but a loss
    of precision is more or less guaranteed. 
-
 */
 int32_t fp32_trunc_to_int32(fp_32 fp32_input)
 {
@@ -135,8 +214,7 @@ int32_t fp32_trunc_to_int32(fp_32 fp32_input)
    METHOD: If positive, add 1/2. If negative, subtract
    1/2. Return the truncation of the sum in both cases. 
 
-   No error possible. 
- 
+   No error possible.  
  */
 int32_t fp32_round_to_int32(fp_32 fp32_input)
 {
@@ -190,6 +268,16 @@ fp_32 fp32_to_nearest_float()
 
 
 /********** END BASIC CONVERSIONS  ***********/
+
+
+/********** BEGIN SATURATING ARITHMETIC  ***********/
+
+
+
+
+
+/********** END SATURATING  ARITHMETIC  ***********/
+
 
 
 /********** BEGIN EXPONENTIAL FUNCTIONS **********/
@@ -248,8 +336,7 @@ fp_32 fp32_sqrt(fp_32 fp32_inp)
 	}
     }
 
-  return x_curr;
-  
+  return x_curr;  
 }
 
 
@@ -279,6 +366,26 @@ fp_32 fp32_nat_log(fp_32 fp32_inp)
 /********** BEGIN TRIG FUNCTIONS **********/
 
 
- 
+ /* 
+   Trigonometric Functions. Implemented via Taylor Polynomials Currently. 
+   Number Of Iterations Set in Parameters Header: should solve instead for 
+   max precision possible probably. 
+ */
+fp_32 fp32_sin(fp_32);
+fp_32 fp32_cos(fp_32);
+fp_32 fp32_tan(fp_32);
+
+fp_32 fp32_asin(fp_32);
+fp_32 fp32_acos(fp_32);
+fp_32 fp32_atan(fp_32);
+
 		   
 /********** END TRIG FUNCTIONS **********/
+
+
+
+
+/******************* FLOATING POINT HELPER FUNCTIONS ***************/
+
+
+int extract 

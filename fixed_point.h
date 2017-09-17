@@ -1,4 +1,17 @@
-/* In this file we define certain useful constants, including */
+/* In this file we define certain useful constants, including parameters/precision/etc... */
+
+/* ASSUMPTIONS:
+
+   compiler needs to use:
+
+   --arithmetic right-shift
+   --2's complement 
+
+   Processor needs to:
+
+   --conform to IEEE standard for floating point arithmetic
+
+*/
 
 #include <stdint.h>
 #include <limits.h>
@@ -22,7 +35,6 @@ fp_32 double_to_nearest_fp32(float);
 float fp32_to_nearest_double(fp_32);
 
 
-
 /* Min/Max */
 fp_32 fp32_min(fp_32*); /* Should return the indices of the max/min values */
 fp_32 fp32_max(fp_32*);
@@ -44,8 +56,7 @@ fp_32 fp32_gen_log(fp_32, fp_32);
 
 /* 
    Trigonometric Functions. Implemented via Taylor Polynomials Currently. 
-   Number Of Iterations Set in Parameters Header: should solve instead for 
-   
+   Number Of Iterations Set in Parameters Header: should solve instead for    
  */
 fp_32 fp32_sin(fp_32);
 fp_32 fp32_cos(fp_32);
@@ -55,11 +66,20 @@ fp_32 fp32_asin(fp_32);
 fp_32 fp32_acos(fp_32);
 fp_32 fp32_atan(fp_32);
 
-
-
 /* Eh...Include parameters here anyway since they will be necessary.  */
 
 /* Will include optimization definitions for */
+
+
+
+/************ IEEE FLOATING POINT CONSTANTS **********************/
+
+/* sign bit is always one in either precision, no point in coding it */
+
+const int 
+
+
+/************ END IEEE FLOATING POINT CONSTANTS ******************/
 
 
 /* FRAC_P is the number of decimal bits we wish to sacrifice for
@@ -67,7 +87,11 @@ fp_32 fp32_atan(fp_32);
    representation is 2^(-FRAC_P).
 
    For now split evenly, but beware of the ranges derived from this fact. */
-const int FRAC_P 16;
+const int FRAC_P = 16;
+
+
+/* Create a bit-mask for easy selection */
+const int FRAC_MASK = (1 << FRAC_P) - 1;
 
 /*
    >> the overflow bound is exclusive: fp_32 can represent *up to* this bound.
@@ -76,6 +100,8 @@ const int FRAC_P 16;
   */
 const int32_t FP32_OVERFLOW = 1 << (31 - FRAC_P);
 const int32_t FP32_UNDERFLOW = -FP32_OVERFLOW;
+
+
 
 /* In general, should not use macros where constants will do. */
 const int NUM_NEWT_ITER = 20;

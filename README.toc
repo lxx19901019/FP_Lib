@@ -1,0 +1,12 @@
+\contentsline {section}{\numberline {1}Introduction}{1}
+\contentsline {section}{\numberline {2}Parameters}{1}
+\contentsline {section}{\numberline {3}Basic Arithmetic}{1}
+\contentsline {subsection}{\numberline {3.1}fp32\_add}{1}
+\contentsline {subsection}{\numberline {3.2}Subtraction: }{1}
+\contentsline {subsection}{\numberline {3.3}Multiplication}{2}
+\contentsline {subsection}{\numberline {3.4}Division}{2}
+\contentsline {section}{\numberline {4}Basic Conversions}{2}
+\contentsline {section}{\numberline {5}Saturating Arithmetic}{2}
+\contentsline {section}{\numberline {6}Min/Max}{2}
+\contentsline {section}{\numberline {7}Basic Exponential Functions}{2}
+\contentsline {section}{\numberline {8}Basic Trigonometric Functions}{2}
